@@ -1,13 +1,13 @@
 <script lang="ts">
-	// import { page } from '$app/stores';
-	// Temporalmente comentado para evitar errores de tipos
+	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
 	
 	let name = 'WellPlay';
 	
-	// Función simple para determinar la página activa
+	// Función para determinar la página activa usando SvelteKit stores
 	function isActive(path: string): boolean {
-		if (typeof window !== 'undefined') {
-			return window.location.pathname === path;
+		if (browser && $page) {
+			return $page.url.pathname === path;
 		}
 		return false;
 	}
@@ -26,22 +26,22 @@
 		<div class="navbar-menu">
 			<ul class="navbar-nav">
 				<li class="nav-item">
-					<a href="/" class="nav-link" class:active={isActive('/')}>Home</a>
+					<a href="/" class="nav-link" class:active={browser && $page?.url?.pathname === '/'}>Home</a>
 				</li>
 				<li class="nav-item">
-					<a href="/retos" class="nav-link" class:active={isActive('/retos')}>Retos</a>
+					<a href="/retos" class="nav-link" class:active={browser && $page?.url?.pathname === '/retos'}>Retos</a>
 				</li>
 				<li class="nav-item">
-					<a href="/blog" class="nav-link" class:active={isActive('/blog')}>Blog</a>
+					<a href="/blog" class="nav-link" class:active={browser && $page?.url?.pathname === '/blog'}>Blog</a>
 				</li>
 				<li class="nav-item">
-					<a href="/store" class="nav-link" class:active={isActive('/store')}>Store</a>
+					<a href="/store" class="nav-link" class:active={browser && $page?.url?.pathname === '/store'}>Store</a>
 				</li>
 				<li class="nav-item">
-					<a href="/chat" class="nav-link" class:active={isActive('/chat')}>Chat</a>
+					<a href="/chat" class="nav-link" class:active={browser && $page?.url?.pathname === '/chat'}>Chat</a>
 				</li>
 				<li class="nav-item">
-					<a href="/about" class="nav-link" class:active={isActive('/about')}>About</a>
+					<a href="/about" class="nav-link" class:active={browser && $page?.url?.pathname === '/about'}>About</a>
 				</li>
 				<li class="nav-item profile">
 					<div class="profile-avatar">
@@ -76,11 +76,14 @@
 		top: 0;
 		left: 0;
 		right: 0;
+		width: 100%;
 		background: var(--navbar-bg);
 		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 		box-shadow: var(--navbar-shadow);
 		z-index: 1000;
 		padding: 0.5rem 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
 	.navbar-container {
@@ -90,6 +93,7 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		height: 60px;
 	}
 
 	.navbar-brand {
@@ -119,6 +123,7 @@
 	.navbar-menu {
 		display: flex;
 		align-items: center;
+		height: 100%;
 	}
 
 	.navbar-nav {
@@ -128,10 +133,14 @@
 		padding: 0;
 		align-items: center;
 		gap: 0.5rem;
+		height: 100%;
 	}
 
 	.nav-item {
 		margin: 0;
+		height: 100%;
+		display: flex;
+		align-items: center;
 	}
 
 	.nav-link {
@@ -230,6 +239,20 @@
 
 		.logo-link {
 			font-size: 1.5rem;
+		}
+		
+		.navbar-container {
+			padding: 0 1rem;
+		}
+	}
+	
+	@media (min-width: 769px) {
+		.mobile-menu-btn {
+			display: none !important;
+		}
+		
+		.navbar-menu {
+			display: flex !important;
 		}
 	}
 
