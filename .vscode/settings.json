@@ -6,5 +6,13 @@
 	"files.exclude": {
 		"**/.svelte-kit": true
 	},
-	"typescript.validate.enable": true
+	"typescript.validate.enable": true,
+	"files.associations": {
+		"*.svelte": "svelte"
+	},
+	"typescript.preferences.excludePackageJsonAutoImports": true,
+	"search.exclude": {
+		"**/.svelte-kit": true,
+		"**/node_modules": true
+	}
 }
