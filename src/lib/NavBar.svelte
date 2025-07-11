@@ -3,14 +3,6 @@
 	import { browser } from '$app/environment';
 	
 	let name = 'WellPlay';
-	
-	// Función para determinar la página activa usando SvelteKit stores
-	function isActive(path: string): boolean {
-		if (browser && $page) {
-			return $page.url.pathname === path;
-		}
-		return false;
-	}
 </script>
 
 <nav class="navbar">
@@ -53,34 +45,24 @@
 
 		<!-- Botón de menú móvil -->
 		<button class="mobile-menu-btn" aria-label="Toggle menu">
-			<span class="hamburger"></span>
+			<span class="hamburger-line"></span>
+			<span class="hamburger-line"></span>
+			<span class="hamburger-line"></span>
 		</button>
 	</div>
 </nav>
 
 <style>
-	:root {
-		--navbar-bg: rgba(255, 255, 255, 0.95);
-		--navbar-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-		--logo-color-1: #ffd700;
-		--logo-color-2: #ff6b35;
-		--primary-color: #667eea;
-		--secondary-color: #764ba2;
-		--text-color: #333;
-		--nav-link-hover: #667eea;
-		--border-radius: 8px;
-	}
-
 	.navbar {
 		position: fixed;
 		top: 0;
 		left: 0;
 		right: 0;
 		width: 100%;
-		background: var(--navbar-bg);
+		background: rgba(255, 255, 255, 0.95);
 		backdrop-filter: blur(10px);
 		-webkit-backdrop-filter: blur(10px);
-		box-shadow: var(--navbar-shadow);
+		box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 		z-index: 1000;
 		padding: 0.5rem 0;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -108,10 +90,11 @@
 	}
 
 	.logo {
-		background: linear-gradient(45deg, var(--logo-color-1), var(--logo-color-2));
+		background: linear-gradient(45deg, #ffd700, #ff6b35);
 		background-clip: text;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
+		color: #333; /* fallback */
 		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 		transition: all 0.3s ease;
 	}
@@ -146,24 +129,24 @@
 	.nav-link {
 		display: block;
 		padding: 0.75rem 1rem;
-		color: var(--text-color);
+		color: #333;
 		text-decoration: none;
 		font-weight: 500;
-		border-radius: var(--border-radius);
+		border-radius: 8px;
 		transition: all 0.3s ease;
 		position: relative;
 	}
 
 	.nav-link:hover {
-		color: var(--nav-link-hover);
+		color: #667eea;
 		background: rgba(102, 126, 234, 0.1);
 		transform: translateY(-1px);
 	}
 
 	.nav-link.active {
-		color: var(--nav-link-hover);
+		color: #667eea;
 		background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-		border-bottom: 2px solid var(--nav-link-hover);
+		border-bottom: 2px solid #667eea;
 	}
 
 	.profile {
@@ -175,7 +158,7 @@
 		height: 40px;
 		border-radius: 50%;
 		overflow: hidden;
-		border: 2px solid var(--primary-color);
+		border: 2px solid #667eea;
 		cursor: pointer;
 		transition: all 0.3s ease;
 	}
@@ -189,7 +172,7 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+		background: linear-gradient(135deg, #667eea, #764ba2);
 	}
 
 	.mobile-menu-btn {
@@ -199,32 +182,17 @@
 		padding: 0.5rem;
 		cursor: pointer;
 		flex-direction: column;
-		gap: 3px;
+		gap: 4px;
+		width: 30px;
+		height: 30px;
 	}
 
-	.hamburger {
+	.hamburger-line {
 		width: 25px;
 		height: 3px;
-		background: var(--text-color);
+		background: #333;
 		transition: all 0.3s ease;
-	}
-
-	.hamburger::before,
-	.hamburger::after {
-		content: '';
-		width: 25px;
-		height: 3px;
-		background: var(--text-color);
 		display: block;
-		transition: all 0.3s ease;
-	}
-
-	.hamburger::before {
-		transform: translateY(-8px);
-	}
-
-	.hamburger::after {
-		transform: translateY(5px);
 	}
 
 	/* Responsive Design */
@@ -258,6 +226,6 @@
 
 	/* Espaciado para el contenido debajo del navbar */
 	:global(body) {
-		padding-top: 80px;
+		padding-top: 80px !important;
 	}
 </style>
