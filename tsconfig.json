@@ -14,10 +14,17 @@
 		"isolatedModules": true,
 		"noEmit": true,
 		"lib": ["esnext", "DOM", "DOM.Iterable"],
+		"verbatimModuleSyntax": true,
 		"paths": {
 			"$lib": ["./src/lib"],
 			"$lib/*": ["./src/lib/*"]
 		}
 	},
-	"include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.ts", "src/**/*.svelte"]
+	"include": [
+		"src/**/*.d.ts", 
+		"src/**/*.js", 
+		"src/**/*.ts", 
+		"src/**/*.svelte",
+		".svelte-kit/ambient.d.ts"
+	]
 }

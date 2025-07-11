@@ -1,0 +1,13 @@
+/* FORCE DEPLOYMENT TRIGGER */
+/* Timestamp: July 11, 2025 - Latest Updates Applied */
+/* This file forces Vercel to detect changes */
+
+:root {
+  --deployment-version: "1.2.0";
+  --last-update: "2025-07-11";
+}
+
+/* Force deployment marker */
+.force-deployment::before {
+  content: "Updated July 11, 2025";
+}

@@ -13,21 +13,25 @@
 	</h1>
 
 	<p>
-		¡Tu nueva aplicación SvelteKit está lista para comenzar!
+		¡La Salud Es La Meta!
 	</p>
 
 	<div class="features">
 		<div class="feature">
-			<h3>🚀 SvelteKit</h3>
-			<p>Framework moderno y rápido</p>
+			<h3>🚀 Retos</h3>
+			<p>Demuestra que eres el Mejo</p>
 		</div>
 		<div class="feature">
-			<h3>📱 Responsive</h3>
-			<p>Diseño adaptable</p>
+			<h3>📱 Blog</h3>
+			<p>Tips, Novedades, Consejos</p>
 		</div>
 		<div class="feature">
-			<h3>⚡ Performance</h3>
-			<p>Optimizado para velocidad</p>
+			<h3>⚡ Store</h3>
+			<p>Tu tienda especializada en tu palma de la mano</p>
+		</div>
+		<div class="feature">
+			<h3>⚡ Chat</h3>
+			<p>Conéctate con otros usuarios y comparte tus experiencias</p>
 		</div>
 	</div>
 </section>
@@ -47,7 +51,7 @@
 		justify-content: center;
 		align-items: center;
 		text-align: center;
-		min-height: 100vh;
+		min-height: calc(100vh - 80px);
 		padding: 2rem;
 		background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
 		color: var(--text-color);

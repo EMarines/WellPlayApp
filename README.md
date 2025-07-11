@@ -1,6 +1,14 @@
 # WellPlayApp
 
-Una aplicación moderna desarrollada con SvelteKit.
+Una aplicación moderna de bienestar y salud desarrollada con SvelteKit.
+
+🚀 **¡Última actualización: Julio 11, 2025!**
+
+## Características
+- ✅ NavBar responsive con navegación completa
+- ✅ Páginas: Home, Retos, Blog, Store, Chat, About  
+- ✅ Diseño moderno con gradientes y efectos glassmorphism
+- ✅ Compatible con Vercel y TypeScript
 
 ## Desarrollando
 

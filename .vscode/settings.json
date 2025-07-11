@@ -2,5 +2,9 @@
 	"typescript.preferences.includePackageJsonAutoImports": "on",
 	"typescript.suggest.autoImports": true,
 	"typescript.updateImportsOnFileMove.enabled": "always",
-	"typescript.preferences.quoteStyle": "single"
+	"typescript.preferences.quoteStyle": "single",
+	"files.exclude": {
+		"**/.svelte-kit": true
+	},
+	"typescript.validate.enable": true
 }
