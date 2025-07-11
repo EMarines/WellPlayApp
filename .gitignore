@@ -1,6 +1,7 @@
 # build output
 /build
 /.svelte-kit
+**/.svelte-kit/
 
 # dependencies
 /node_modules
