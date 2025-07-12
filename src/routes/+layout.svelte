@@ -205,7 +205,7 @@
 					font-weight: 500;
 					border-radius: 8px;
 					transition: all 0.3s ease;
-				" class:active={browser && $page?.url?.pathname === '/retos'} on:click={closeMobileMenu}>🚀 Retos</a>
+				" class:active={browser && $page?.url?.pathname === '/retos'} on:click={closeMobileMenu}>🏆 Retos</a>
 			</li>
 			<li style="margin-bottom: 0.5rem;">
 				<a href="/blog" style="
@@ -216,7 +216,7 @@
 					font-weight: 500;
 					border-radius: 8px;
 					transition: all 0.3s ease;
-				" class:active={browser && $page?.url?.pathname === '/blog'} on:click={closeMobileMenu}>📱 Blog</a>
+				" class:active={browser && $page?.url?.pathname === '/blog'} on:click={closeMobileMenu}>📝 Blog</a>
 			</li>
 			<li style="margin-bottom: 0.5rem;">
 				<a href="/store" style="
@@ -227,7 +227,7 @@
 					font-weight: 500;
 					border-radius: 8px;
 					transition: all 0.3s ease;
-				" class:active={browser && $page?.url?.pathname === '/store'} on:click={closeMobileMenu}>⚡ Store</a>
+				" class:active={browser && $page?.url?.pathname === '/store'} on:click={closeMobileMenu}>🛍️ Store</a>
 			</li>
 			<li style="margin-bottom: 0.5rem;">
 				<a href="/chat" style="
@@ -255,8 +255,8 @@
 	</div>
 </nav>
 
-<!-- NavBar component como backup -->
-<NavBar />
+<!-- NavBar component como backup (comentado para evitar duplicado) -->
+<!-- <NavBar /> -->
 
 <main style="padding-top: 80px;">
 	<slot />

@@ -18,19 +18,19 @@
 
 	<div class="features">
 		<div class="feature">
-			<h3>🚀 Retos</h3>
-			<p>Demuestra que eres el Mejo</p>
+			<h3>🏆 Retos</h3>
+			<p>Demuestra que eres el Mejor</p>
 		</div>
 		<div class="feature">
-			<h3>📱 Blog</h3>
+			<h3>� Blog</h3>
 			<p>Tips, Novedades, Consejos</p>
 		</div>
 		<div class="feature">
-			<h3>⚡ Store</h3>
+			<h3>�️ Store</h3>
 			<p>Tu tienda especializada en tu palma de la mano</p>
 		</div>
 		<div class="feature">
-			<h3>⚡ Chat</h3>
+			<h3>💬 Chat</h3>
 			<p>Conéctate con otros usuarios y comparte tus experiencias</p>
 		</div>
 	</div>

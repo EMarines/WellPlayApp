@@ -9,7 +9,7 @@
 
 <section class="page-content">
 	<div class="container">
-		<h1>🚀 Retos</h1>
+		<h1>🏆 Retos</h1>
 		<p>Demuestra que eres el mejor. Aquí encontrarás todos los desafíos disponibles.</p>
 		
 		<div class="retos-grid">
