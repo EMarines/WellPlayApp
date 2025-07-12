@@ -22,11 +22,11 @@
 			<p>Demuestra que eres el Mejor</p>
 		</div>
 		<div class="feature">
-			<h3>� Blog</h3>
+			<h3>📝 Blog</h3>
 			<p>Tips, Novedades, Consejos</p>
 		</div>
 		<div class="feature">
-			<h3>�️ Store</h3>
+			<h3>🛍️ Store</h3>
 			<p>Tu tienda especializada en tu palma de la mano</p>
 		</div>
 		<div class="feature">

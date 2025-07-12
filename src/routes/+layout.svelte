@@ -124,7 +124,6 @@
 		<!-- Mobile Menu Button -->
 		<button 
 			style="
-				display: none;
 				background: none;
 				border: none;
 				padding: 0.5rem;
@@ -279,6 +278,11 @@
 		color: #667eea !important;
 		background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)) !important;
 		border-bottom: 2px solid #667eea !important;
+	}
+	
+	/* Mobile menu button - hidden by default, shown on mobile */
+	:global(.mobile-menu-btn) {
+		display: none !important;
 	}
 	
 	/* Mobile responsive */
