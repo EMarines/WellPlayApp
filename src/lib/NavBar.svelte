@@ -10,7 +10,7 @@
 		<!-- Logo a la izquierda -->
 		<div class="navbar-brand">
 			<a href="/" class="logo-link">
-				<span class="logo">{name}</span>
+				<img src="/logo.png" alt="WellPlay" class="logo-img" />
 			</a>
 		</div>
 
@@ -64,8 +64,7 @@
 		-webkit-backdrop-filter: blur(10px);
 		box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 		z-index: 1000;
-		padding: 0.5rem 0;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+		padding: 0;
 	}
 
 	.navbar-container {
@@ -75,32 +74,40 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		height: 60px;
+		height: 100px;
 	}
 
 	.navbar-brand {
 		display: flex;
 		align-items: center;
+		margin: 0;
+		padding: 0;
+		height: 100%;
 	}
 
 	.logo-link {
 		text-decoration: none;
-		font-size: 1.8rem;
-		font-weight: 700;
-	}
-
-	.logo {
-		background: linear-gradient(45deg, #ffd700, #ff6b35);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		color: #333; /* fallback */
-		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+		display: flex;
+		align-items: center;
 		transition: all 0.3s ease;
+		margin: 0;
+		padding: 0;
+		height: 100%;
+		line-height: 0;
 	}
 
-	.logo:hover {
-		transform: scale(1.05);
+	.logo-img {
+		height: 145px;
+		width: auto;
+		transition: transform 0.3s ease;
+		margin: 0;
+		padding: 0;
+		display: block;
+		transform: scale(1.2);
+	}
+
+	.logo-link:hover .logo-img {
+		transform: scale(1.25);
 	}
 
 	.navbar-menu {
@@ -226,6 +233,6 @@
 
 	/* Espaciado para el contenido debajo del navbar */
 	:global(body) {
-		padding-top: 80px !important;
+		padding-top: 100px !important;
 	}
 </style>
