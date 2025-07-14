@@ -1,4 +1,6 @@
 <script lang="ts">
+	import FeatureCarousel from '$lib/components/FeatureCarousel.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
 	let name = 'WellPlay';
 </script>
 
@@ -7,36 +9,82 @@
 	<meta name="description" content="Bienvenido a WellPlayApp" />
 </svelte:head>
 
-<section class="page-section">
-	<header class="page-header">
-		<h1 class="page-title">Bienvenido a</h1>
-		<div class="logo-container">
-			<img src="/logo.png" alt="WellPlay" class="logo-inline" />
-		</div>
-	</header>
+<div class="home-layout">
+	<!-- Contenido principal -->
+	<section class="main-content">
+		<header class="page-header">
+			<h1 class="page-title">Bienvenido a</h1>
+			<div class="logo-container">
+				<img src="/logo.png" alt="WellPlay" class="logo-inline" />
+			</div>
+		</header>
 
-	<p class="page-subtitle">
-		¡La Salud Es La Meta!
-	</p>
+		<p class="page-subtitle">
+			¡La Salud Es La Meta!
+		</p>
 
-	<div class="features-grid">
-		<div class="feature-card">
-			<h3 class="feature-title">🏆 Retos</h3>
-			<p class="feature-description">Demuestra que eres el Mejor</p>
-		</div>
-		<div class="feature-card">
-			<h3 class="feature-title">📝 Blog</h3>
-			<p class="feature-description">Tips, Novedades, Consejos</p>
-		</div>
-		<div class="feature-card">
-			<h3 class="feature-title">🛍️ Store</h3>
-			<p class="feature-description">Tu tienda especializada en tu palma de la mano</p>
-		</div>
-		<div class="feature-card">
-			<h3 class="feature-title">💬 Chat</h3>
-			<p class="feature-description">Conéctate con otros usuarios y comparte tus experiencias</p>
-		</div>
-	</div>
-</section>
+		<!-- Carrusel de características -->
+		<FeatureCarousel />
+	</section>
 
-<!-- Estilos removidos - ahora usa clases CSS globales desde app.css -->
+	<!-- Sidebar con publicidad -->
+	<aside class="sidebar-container">
+		<Sidebar />
+	</aside>
+</div>
+
+<style>
+	.home-layout {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 2rem;
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 2rem 1rem;
+	}
+
+	.main-content {
+		/* Contenido principal sin background propio */
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		min-height: calc(100vh - var(--nav-padding));
+		padding: 2rem;
+		color: var(--text-white);
+	}
+
+	.sidebar-container {
+		display: none; /* Oculto en móvil por defecto */
+	}
+
+	/* Desktop: Layout de 2 columnas */
+	@media (min-width: 1024px) {
+		.home-layout {
+			grid-template-columns: 1fr 320px; /* Sidebar más estrecho */
+			gap: 2rem;
+			max-width: 1200px; /* Contenedor más controlado */
+		}
+
+		.sidebar-container {
+			display: block;
+		}
+	}
+
+	/* Tablet: Sidebar abajo */
+	@media (min-width: 768px) and (max-width: 1023px) {
+		.home-layout {
+			grid-template-columns: 1fr;
+		}
+
+		.sidebar-container {
+			display: block;
+			order: 2;
+		}
+
+		.main-content {
+			order: 1;
+		}
+	}
+</style>
