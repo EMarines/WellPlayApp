@@ -1,4 +1,5 @@
 {
+	"extends": "./.svelte-kit/tsconfig.json",
 	"compilerOptions": {
 		"allowJs": true,
 		"checkJs": true,
@@ -9,20 +10,7 @@
 		"sourceMap": true,
 		"strict": false,
 		"verbatimModuleSyntax": true,
-		"isolatedModules": true,
-		"lib": ["esnext", "DOM", "DOM.Iterable"],
-		"moduleResolution": "node",
-		"module": "esnext",
-		"noEmit": true,
-		"target": "esnext",
-		"paths": {
-			"$lib": ["./src/lib"],
-			"$lib/*": ["./src/lib/*"]
-		},
-		"rootDirs": [
-			".",
-			"./.svelte-kit/types"
-		]
+		"isolatedModules": true
 	},
 	"include": [
 		"src/**/*.d.ts",
