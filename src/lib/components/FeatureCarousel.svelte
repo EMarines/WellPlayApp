@@ -205,7 +205,7 @@
 <style>
 	.feature-carousel {
 		width: 100%;
-		max-width: 500px; /* Reducido para que quepa el sidebar */
+		max-width: 600px; /* Aumentado para aprovechar el espacio central */
 		margin: 0 auto;
 		position: relative;
 		overflow: hidden;

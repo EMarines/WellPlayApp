@@ -1,8 +1,43 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 	
 	let name = 'WellPlay';
+	let isMobileMenuOpen = false;
+
+	function toggleMobileMenu() {
+		isMobileMenuOpen = !isMobileMenuOpen;
+	}
+
+	function closeMobileMenu() {
+		isMobileMenuOpen = false;
+	}
+
+	// Cerrar menú al hacer clic fuera
+	onMount(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			const target = event.target as Element;
+			if (isMobileMenuOpen && !target.closest('.mobile-menu') && !target.closest('.mobile-menu-btn')) {
+				closeMobileMenu();
+			}
+		};
+
+		document.addEventListener('click', handleClickOutside);
+		
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
+
+	// Prevenir scroll cuando el menú está abierto
+	$: if (browser) {
+		if (isMobileMenuOpen) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+	}
 </script>
 
 <nav class="navbar">
@@ -44,11 +79,95 @@
 		</div>
 
 		<!-- Botón de menú móvil -->
-		<button class="mobile-menu-btn" aria-label="Toggle menu">
+		<button 
+			class="mobile-menu-btn" 
+			class:active={isMobileMenuOpen}
+			on:click={toggleMobileMenu}
+			aria-label="Toggle menu"
+		>
 			<span class="hamburger-line"></span>
 			<span class="hamburger-line"></span>
 			<span class="hamburger-line"></span>
 		</button>
+	</div>
+
+	<!-- Overlay para el menú móvil -->
+	{#if isMobileMenuOpen}
+		<div class="mobile-overlay" on:click={closeMobileMenu}></div>
+	{/if}
+
+	<!-- Menú móvil -->
+	<div class="mobile-menu" class:open={isMobileMenuOpen}>
+		<div class="mobile-menu-content">
+			<ul class="mobile-nav">
+				<li class="mobile-nav-item">
+					<a 
+						href="/" 
+						class="mobile-nav-link" 
+						class:active={browser && $page?.url?.pathname === '/'}
+						on:click={closeMobileMenu}
+					>
+						🏠 Home
+					</a>
+				</li>
+				<li class="mobile-nav-item">
+					<a 
+						href="/retos" 
+						class="mobile-nav-link" 
+						class:active={browser && $page?.url?.pathname === '/retos'}
+						on:click={closeMobileMenu}
+					>
+						🏆 Retos
+					</a>
+				</li>
+				<li class="mobile-nav-item">
+					<a 
+						href="/blog" 
+						class="mobile-nav-link" 
+						class:active={browser && $page?.url?.pathname === '/blog'}
+						on:click={closeMobileMenu}
+					>
+						📝 Blog
+					</a>
+				</li>
+				<li class="mobile-nav-item">
+					<a 
+						href="/store" 
+						class="mobile-nav-link" 
+						class:active={browser && $page?.url?.pathname === '/store'}
+						on:click={closeMobileMenu}
+					>
+						🛍️ Store
+					</a>
+				</li>
+				<li class="mobile-nav-item">
+					<a 
+						href="/chat" 
+						class="mobile-nav-link" 
+						class:active={browser && $page?.url?.pathname === '/chat'}
+						on:click={closeMobileMenu}
+					>
+						💬 Chat
+					</a>
+				</li>
+				<li class="mobile-nav-item">
+					<a 
+						href="/about" 
+						class="mobile-nav-link" 
+						class:active={browser && $page?.url?.pathname === '/about'}
+						on:click={closeMobileMenu}
+					>
+						ℹ️ About
+					</a>
+				</li>
+				<li class="mobile-nav-item profile-mobile">
+					<div class="mobile-profile">
+						<img src="/profile-placeholder.svg" alt="Perfil" class="mobile-avatar" />
+						<span>Mi Perfil</span>
+					</div>
+				</li>
+			</ul>
+		</div>
 	</div>
 </nav>
 
@@ -192,6 +311,8 @@
 		gap: 4px;
 		width: 30px;
 		height: 30px;
+		z-index: 1001;
+		position: relative;
 	}
 
 	.hamburger-line {
@@ -200,6 +321,129 @@
 		background: #333;
 		transition: all 0.3s ease;
 		display: block;
+		transform-origin: center;
+	}
+
+	/* Animación del hamburger cuando está activo */
+	.mobile-menu-btn.active .hamburger-line:nth-child(1) {
+		transform: rotate(45deg) translate(5px, 5px);
+	}
+
+	.mobile-menu-btn.active .hamburger-line:nth-child(2) {
+		opacity: 0;
+	}
+
+	.mobile-menu-btn.active .hamburger-line:nth-child(3) {
+		transform: rotate(-45deg) translate(7px, -6px);
+	}
+
+	/* Overlay para el menú móvil */
+	.mobile-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.3);
+		z-index: 998;
+		animation: fadeIn 0.3s ease;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	/* Menú móvil */
+	.mobile-menu {
+		position: fixed;
+		top: 100px;
+		left: 0;
+		right: 0;
+		background: rgba(255, 255, 255, 0.98);
+		backdrop-filter: blur(15px);
+		border-top: 1px solid rgba(102, 126, 234, 0.2);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+		z-index: 999;
+		max-height: 0;
+		overflow: hidden;
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+
+	.mobile-menu.open {
+		max-height: calc(100vh - 100px);
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.mobile-menu-content {
+		padding: 1rem 0;
+	}
+
+	.mobile-nav {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.mobile-nav-item {
+		margin: 0;
+		border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+	}
+
+	.mobile-nav-item:last-child {
+		border-bottom: none;
+	}
+
+	.mobile-nav-link {
+		display: block;
+		padding: 1rem 1.5rem;
+		color: #333;
+		text-decoration: none;
+		font-weight: 500;
+		transition: all 0.3s ease;
+		font-size: 1.1rem;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.mobile-nav-link:hover {
+		background: rgba(102, 126, 234, 0.1);
+		color: #667eea;
+		transform: translateX(8px);
+	}
+
+	.mobile-nav-link.active {
+		background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+		color: #667eea;
+		border-left: 4px solid #667eea;
+	}
+
+	.profile-mobile {
+		border-top: 2px solid rgba(102, 126, 234, 0.2);
+		margin-top: 1rem;
+		padding-top: 1rem;
+	}
+
+	.mobile-profile {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 1.5rem;
+		color: #333;
+		font-weight: 500;
+	}
+
+	.mobile-avatar {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		border: 2px solid #667eea;
+		object-fit: cover;
+		background: linear-gradient(135deg, #667eea, #764ba2);
 	}
 
 	/* Responsive Design */
