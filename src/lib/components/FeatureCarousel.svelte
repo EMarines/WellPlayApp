@@ -41,11 +41,11 @@
 	function updateResponsiveValues() {
 		const width = window.innerWidth;
 		if (width <= 480) {
-			cardWidth = 260;
-			gap = 10;
+			cardWidth = 220; // Más angosta para móvil
+			gap = 12;
 		} else if (width <= 768) {
-			cardWidth = 280;
-			gap = 15;
+			cardWidth = 240; // Más angosta para tablet
+			gap = 16;
 		} else {
 			cardWidth = 320;
 			gap = 20;
@@ -132,29 +132,76 @@
 		translateX = 0;
 		startAutoSlide();
 	}
+	
+	// Soporte para navegación por teclado
+	function handleKeydown(e: KeyboardEvent) {
+		switch (e.key) {
+			case 'ArrowLeft':
+			case 'ArrowUp':
+				e.preventDefault();
+				currentIndex = currentIndex === 0 ? features.length - 1 : currentIndex - 1;
+				clearInterval(intervalId);
+				startAutoSlide();
+				break;
+			case 'ArrowRight':
+			case 'ArrowDown':
+				e.preventDefault();
+				currentIndex = (currentIndex + 1) % features.length;
+				clearInterval(intervalId);
+				startAutoSlide();
+				break;
+			case 'Home':
+				e.preventDefault();
+				currentIndex = 0;
+				clearInterval(intervalId);
+				startAutoSlide();
+				break;
+			case 'End':
+				e.preventDefault();
+				currentIndex = features.length - 1;
+				clearInterval(intervalId);
+				startAutoSlide();
+				break;
+		}
+	}
 </script>
 
 <div class="feature-carousel" 
 	 bind:this={carouselElement}
 	 bind:clientWidth={containerWidth}
-	 on:touchstart={handleTouchStart}
-	 on:touchmove={handleTouchMove}
-	 on:touchend={handleTouchEnd}
-	 on:mousedown={handleMouseDown}
-	 on:mousemove={handleMouseMove}
-	 on:mouseup={handleMouseUp}
-	 on:mouseleave={handleMouseUp}
+	 role="region"
+	 aria-label="Carrusel de características interactivo - Use las flechas del teclado para navegar"
+	 aria-roledescription="carrusel"
+	 aria-live="polite"
 >
 	<!-- Contenedor de todas las tarjetas -->
 	<div 
 		class="carousel-track" 
+		class:dragging={isDragging}
+		role="button"
+		tabindex="0"
+		aria-label="Área de interacción del carrusel - Arrastra o usa las flechas del teclado"
+		aria-live="polite"
+		aria-atomic="true"
 		style="transform: translateX(calc(-{currentIndex * (cardWidth + gap)}px + {centerOffset}px + {isDragging ? translateX : 0}px))"
+		on:touchstart={handleTouchStart}
+		on:touchmove={handleTouchMove}
+		on:touchend={handleTouchEnd}
+		on:mousedown={handleMouseDown}
+		on:mousemove={handleMouseMove}
+		on:mouseup={handleMouseUp}
+		on:mouseleave={handleMouseUp}
+		on:keydown={handleKeydown}
 	>
 		{#each features as feature, index}
 			<div 
 				class="feature-slide"
 				class:active={index === currentIndex}
 				class:side-card={Math.abs(index - currentIndex) === 1}
+				role="group"
+				aria-roledescription="diapositiva"
+				aria-label="{feature.title} - Diapositiva {index + 1} de {features.length}"
+				aria-hidden={index !== currentIndex}
 				style="width: {cardWidth}px; min-width: {cardWidth}px; max-width: {cardWidth}px;"
 			>
 				<a href={feature.href} class="feature-card-link">
@@ -228,6 +275,17 @@
 		gap: 20px; /* Espacio entre tarjetas */
 		padding: 20px 0; /* Padding vertical para sombras */
 		align-items: center;
+		cursor: grab;
+		outline: none;
+	}
+
+	.carousel-track:focus {
+		outline: 2px solid rgba(102, 126, 234, 0.5);
+		outline-offset: 2px;
+	}
+
+	.carousel-track:active {
+		cursor: grabbing;
 	}
 
 	.carousel-track.dragging {
@@ -375,7 +433,7 @@
 	/* Responsive */
 	@media (max-width: 768px) {
 		.feature-carousel {
-			max-width: 400px; /* Más controlado en tablet */
+			max-width: 320px; /* Más controlado en tablet para mejor curvatura */
 			padding: 0 15px;
 		}
 
@@ -390,7 +448,7 @@
 		}
 
 		.carousel-track {
-			gap: 15px;
+			gap: 16px; /* Ajustado para coincidir con JS */
 		}
 
 		.feature-slide.side-card {
@@ -398,7 +456,7 @@
 		}
 		
 		.feature-title-carousel {
-			font-size: 1.2rem;
+			font-size: 1.1rem;
 		}
 		
 		.feature-description-carousel {
@@ -408,12 +466,12 @@
 
 	@media (max-width: 480px) {
 		.feature-carousel {
-			max-width: 350px; /* Más controlado en móvil */
+			max-width: 280px; /* Más angosto en móvil para mejor curvatura */
 			padding: 0 10px;
 		}
 
 		.feature-slide {
-			height: 220px;
+			height: 200px; /* Más bajo para mejor proporción */
 			opacity: 0.05; /* Casi invisibles en móvil */
 		}
 
@@ -423,11 +481,19 @@
 		}
 
 		.carousel-track {
-			gap: 10px;
+			gap: 12px; /* Ajustado para coincidir con JS */
 		}
 
 		.feature-slide.side-card {
 			opacity: 0.2; /* Muy opacas en móvil */
+		}
+
+		.feature-title-carousel {
+			font-size: 1rem;
+		}
+		
+		.feature-description-carousel {
+			font-size: 0.75rem;
 		}
 	}
 </style>

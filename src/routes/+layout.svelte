@@ -1,6 +1,6 @@
 <script>
 	import './app.css';
-	import NavBar from '$lib/NavBar.svelte';
+	import NavBar from '$lib/components/NavBar.svelte';
 	import SponsorsFooter from '$lib/components/SponsorsFooter.svelte';
 	import LeftSidebar from '$lib/components/LeftSidebar.svelte';
 	import RightSidebar from '$lib/components/RightSidebar.svelte';

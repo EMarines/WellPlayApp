@@ -65,27 +65,27 @@
 			<div class="partner-category">
 				<h4>Fitness & Entrenamiento</h4>
 				<ul>
-					<li><a href="#">Rutinas Premium</a></li>
-					<li><a href="#">Entrenadores Certificados</a></li>
-					<li><a href="#">Equipos Deportivos</a></li>
+					<li><a href="www.matchhome.net">Rutinas Premium</a></li>
+					<li><a href="www.matchhome.net">Entrenadores Certificados</a></li>
+					<li><a href="www.matchhome.net">Equipos Deportivos</a></li>
 				</ul>
 			</div>
 			
 			<div class="partner-category">
 				<h4>Nutrición & Suplementos</h4>
 				<ul>
-					<li><a href="#">Planes Nutricionales</a></li>
-					<li><a href="#">Suplementos Naturales</a></li>
-					<li><a href="#">Consultoría Nutricional</a></li>
+					<li><a href="www.matchhome.net">Planes Nutricionales</a></li>
+					<li><a href="www.matchhome.net">Suplementos Naturales</a></li>
+					<li><a href="www.matchhome.net">Consultoría Nutricional</a></li>
 				</ul>
 			</div>
 			
 			<div class="partner-category">
 				<h4>Bienestar & Salud</h4>
 				<ul>
-					<li><a href="#">Chequeos Médicos</a></li>
-					<li><a href="#">Terapias Alternativas</a></li>
-					<li><a href="#">Programas de Bienestar</a></li>
+					<li><a href="www.matchhome.net">Chequeos Médicos</a></li>
+					<li><a href="www.matchhome.net">Terapias Alternativas</a></li>
+					<li><a href="www.matchhome.net">Programas de Bienestar</a></li>
 				</ul>
 			</div>
 		</div>
@@ -104,6 +104,8 @@
 		backdrop-filter: blur(10px);
 		color: white;
 		margin-top: 3rem;
+		margin-left: 320px; /* Espacio para sidebar izquierdo */
+		margin-right: 320px; /* Espacio para sidebar derecho */
 		border-top: 1px solid rgba(255, 255, 255, 0.2);
 		box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 	}
@@ -270,7 +272,26 @@
 	}
 
 	/* Responsive */
+	@media (max-width: 1440px) {
+		.sponsors-footer {
+			margin-left: 260px; /* Ajustar para sidebars más pequeños */
+			margin-right: 260px;
+		}
+	}
+
+	@media (max-width: 1200px) {
+		.sponsors-footer {
+			margin-left: 2rem; /* Sin sidebars en pantallas pequeñas */
+			margin-right: 2rem;
+		}
+	}
+
 	@media (max-width: 768px) {
+		.sponsors-footer {
+			margin-left: 1rem;
+			margin-right: 1rem;
+		}
+
 		.footer-container {
 			padding: 1.5rem 1rem;
 		}
@@ -297,6 +318,13 @@
 		.partners-links {
 			grid-template-columns: 1fr;
 			gap: 1.5rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.sponsors-footer {
+			margin-left: 0.5rem;
+			margin-right: 0.5rem;
 		}
 	}
 </style>

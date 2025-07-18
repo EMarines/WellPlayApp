@@ -45,5 +45,14 @@ export const features: Feature[] = [
 		image: "/logo.png", // Usando logo existente como placeholder
 		href: "/chat",
 		color: "#4facfe"
+	},
+	{
+		id: 5,
+		title: "Crea Un Nuevo Reto Con Tus Amigos",
+		description: "Demuestra que eres el mejor",
+		emoji: "🙌",
+		image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRupR9ez3VVYyVuPNEJhHkvLLBKOYAA0SMWxw&s", // Usando logo existente como placeholder
+		href: "/chat",
+		color: "#4facfe"
 	}
 ];
