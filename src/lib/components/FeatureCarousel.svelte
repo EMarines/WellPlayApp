@@ -3,7 +3,7 @@
 	import { features, type Feature } from '$lib/data/features';
 	
 	let currentIndex = 0;
-	let intervalId: number;
+	let intervalId: number | undefined;
 	let carouselElement: HTMLElement;
 	let isDragging = false;
 	let startX = 0;
@@ -57,7 +57,7 @@
 			if (!isDragging) {
 				currentIndex = (currentIndex + 1) % features.length;
 			}
-		}, 5000);
+		}, 5000) as any;
 	}
 	
 	function goToFeature(index: number) {

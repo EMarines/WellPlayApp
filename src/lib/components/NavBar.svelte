@@ -2,9 +2,76 @@
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
+	import { user, isAuthenticated, loading } from '$lib/auth';
+	import { UserProfileService } from '$lib/services/userProfile';
+	import { signOut } from 'firebase/auth';
+	import { auth } from '$lib/firebase';
 	
 	let name = 'WellPlay';
 	let isMobileMenuOpen = false;
+	let userAlias = '';
+	let userPhotoURL = '';
+
+	// Función para obtener el nombre a mostrar
+	function getDisplayName(user: any, alias: string): string {
+		if (alias) {
+			return alias;
+		}
+		if (user?.email) {
+			return user.email.split('@')[0];
+		}
+		return 'Usuario';
+	}
+
+	// Cargar alias del usuario cuando está autenticado Y la autenticación ha terminado de cargar
+	$: if (!$loading && $isAuthenticated && $user) {
+		console.log('🔍 NavBar: Intentando cargar perfil para usuario:', $user.uid);
+		console.log('🔍 Usuario autenticado en Firebase:', !!auth.currentUser);
+		console.log('🔍 UID coincide:', auth.currentUser?.uid === $user.uid);
+		console.log('🔍 Email del usuario:', $user.email);
+		
+		UserProfileService.ensureUserProfile($user.uid, $user.email || '', $user.displayName || undefined)
+			.then(profile => {
+				console.log('✅ NavBar: Perfil cargado exitosamente:', profile.alias, profile.photoURL ? 'con foto' : 'sin foto');
+				if (profile?.alias) {
+					userAlias = profile.alias;
+				}
+				if (profile?.photoURL) {
+					userPhotoURL = profile.photoURL;
+				}
+			})
+			.catch(error => {
+				console.error('❌ NavBar: Error al cargar perfil:', error);
+				console.log('🔍 Código de error:', error.code);
+				console.log('🔍 Mensaje:', error.message);
+				console.log('🔍 Usuario actual:', auth.currentUser?.uid);
+				console.log('🔍 Email actual:', auth.currentUser?.email);
+				
+				// Obtener token de manera asíncrona
+				if (auth.currentUser) {
+					auth.currentUser.getIdToken().then(token => {
+						console.log('🔍 Token auth disponible:', !!token);
+					}).catch(() => {
+						console.log('🔍 No se pudo obtener el token');
+					});
+				}
+				
+				// Ejecutar debug automático de permisos
+				if (typeof window !== 'undefined' && window.debugWellPlay) {
+					console.log('🧪 Ejecutando debug automático de permisos...');
+					setTimeout(() => {
+						window.debugWellPlay.debugFirestorePermissions();
+					}, 1000);
+				}
+				
+				userAlias = '';
+				userPhotoURL = '';
+			});
+	} else if (!$loading && !$isAuthenticated) {
+		// Limpiar datos cuando no está autenticado (solo después de que termine de cargar)
+		userAlias = '';
+		userPhotoURL = '';
+	}
 
 	function toggleMobileMenu() {
 		isMobileMenuOpen = !isMobileMenuOpen;
@@ -12,6 +79,15 @@
 
 	function closeMobileMenu() {
 		isMobileMenuOpen = false;
+	}
+
+	async function handleLogout() {
+		try {
+			await signOut(auth);
+			closeMobileMenu();
+		} catch (error) {
+			console.error('Error al cerrar sesión:', error);
+		}
 	}
 
 	// Cerrar menú al hacer clic fuera
@@ -70,11 +146,36 @@
 				<li class="nav-item">
 					<a href="/about" class="nav-link" class:active={browser && $page?.url?.pathname === '/about'}>About</a>
 				</li>
-				<li class="nav-item profile">
-					<div class="profile-avatar">
-						<img src="/profile-placeholder.svg" alt="Perfil" class="avatar-img" />
-					</div>
-				</li>
+				{#if $isAuthenticated}
+					<li class="nav-item profile">
+						<a href="/profile-setup" class="profile-link">
+							<div class="profile-avatar">
+								{#if userPhotoURL}
+									<img src={userPhotoURL} alt="Perfil" class="avatar-img" />
+								{:else}
+									<img src="/profile-placeholder.svg" alt="Perfil" class="avatar-img" />
+								{/if}
+							</div>
+							<span class="user-name">{getDisplayName($user, userAlias)}</span>
+						</a>
+					</li>
+					<li class="nav-item">
+						<button class="logout-btn" on:click={handleLogout}>
+							Cerrar Sesión
+						</button>
+					</li>
+				{:else}
+					<li class="nav-item">
+						<a href="/auth" class="nav-link auth-link">
+							<div class="auth-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+									<path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+								</svg>
+							</div>
+							Iniciar Sesión
+						</a>
+					</li>
+				{/if}
 			</ul>
 		</div>
 
@@ -166,12 +267,38 @@
 						ℹ️ About
 					</a>
 				</li>
-				<li class="mobile-nav-item profile-mobile">
-					<div class="mobile-profile">
-						<img src="/profile-placeholder.svg" alt="Perfil" class="mobile-avatar" />
-						<span>Mi Perfil</span>
-					</div>
-				</li>
+				{#if $isAuthenticated}
+					<li class="mobile-nav-item profile-mobile">
+						<a 
+							href="/profile-setup" 
+							class="mobile-profile"
+							on:click={closeMobileMenu}
+						>
+							<img src="/profile-placeholder.svg" alt="Perfil" class="mobile-avatar" />
+							<span>{getDisplayName($user, userAlias)}</span>
+						</a>
+					</li>
+					<li class="mobile-nav-item">
+						<button class="mobile-logout-btn" on:click={handleLogout}>
+							🚪 Cerrar Sesión
+						</button>
+					</li>
+				{:else}
+					<li class="mobile-nav-item">
+						<a 
+							href="/auth" 
+							class="mobile-nav-link auth-mobile"
+							on:click={closeMobileMenu}
+						>
+							<div class="mobile-auth-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+									<path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+								</svg>
+							</div>
+							Iniciar Sesión
+						</a>
+					</li>
+				{/if}
 			</ul>
 		</div>
 	</div>
@@ -305,6 +432,87 @@
 		height: 100%;
 		object-fit: cover;
 		background: linear-gradient(135deg, #667eea, #764ba2);
+	}
+
+	.profile-link {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		text-decoration: none;
+		color: inherit;
+		padding: 0.5rem;
+		border-radius: 8px;
+		transition: background-color 0.3s ease;
+		min-width: 70px;
+	}
+
+	.profile-link:hover {
+		background-color: rgba(102, 126, 234, 0.1);
+	}
+
+	.user-name {
+		font-size: 0.8rem;
+		color: #666;
+		font-weight: 500;
+		text-align: center;
+		white-space: nowrap;
+		max-width: 80px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.logout-btn {
+		background: linear-gradient(135deg, #ef4444, #dc2626);
+		color: white;
+		border: none;
+		padding: 0.5rem 1rem;
+		border-radius: 8px;
+		font-size: 0.9rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.logout-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+	}
+
+	.auth-link {
+		background: linear-gradient(135deg, #667eea, #764ba2);
+		color: white !important;
+		padding: 0.5rem 1rem;
+		border-radius: 8px;
+		font-weight: 500;
+		transition: all 0.3s ease;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		min-width: 80px;
+	}
+
+	.auth-link:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+		background: linear-gradient(135deg, #5a67d8, #6b46c1);
+	}
+
+	.auth-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+	}
+
+	.auth-icon svg {
+		transition: transform 0.3s ease;
+	}
+
+	.auth-link:hover .auth-icon svg {
+		transform: scale(1.1);
 	}
 
 	.mobile-menu-btn {
@@ -442,11 +650,13 @@
 
 	.mobile-profile {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 1rem;
+		gap: 0.5rem;
 		padding: 1rem 1.5rem;
 		color: #333;
 		font-weight: 500;
+		text-align: center;
 	}
 
 	.mobile-avatar {
@@ -456,6 +666,59 @@
 		border: 2px solid #667eea;
 		object-fit: cover;
 		background: linear-gradient(135deg, #667eea, #764ba2);
+	}
+
+	.mobile-logout-btn {
+		width: 100%;
+		background: linear-gradient(135deg, #ef4444, #dc2626);
+		color: white;
+		border: none;
+		padding: 1rem 1.5rem;
+		font-size: 1.1rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		text-align: left;
+		border-radius: 0;
+	}
+
+	.mobile-logout-btn:hover {
+		background: linear-gradient(135deg, #dc2626, #b91c1c);
+		transform: translateX(5px);
+	}
+
+	.auth-mobile {
+		background: linear-gradient(135deg, #667eea, #764ba2) !important;
+		color: white !important;
+		margin-top: 1rem;
+		border-top: 2px solid rgba(102, 126, 234, 0.2);
+		padding-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		text-align: center;
+	}
+
+	.auth-mobile:hover {
+		background: linear-gradient(135deg, #5a67d8, #6b46c1) !important;
+		transform: translateY(-2px);
+	}
+
+	.mobile-auth-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 24px;
+		height: 24px;
+	}
+
+	.mobile-auth-icon svg {
+		transition: transform 0.3s ease;
+	}
+
+	.auth-mobile:hover .mobile-auth-icon svg {
+		transform: scale(1.1);
 	}
 
 	/* Responsive Design */

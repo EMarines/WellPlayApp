@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import './app.css';
 	import NavBar from '$lib/components/NavBar.svelte';
 	import SponsorsFooter from '$lib/components/SponsorsFooter.svelte';
@@ -6,6 +6,16 @@
 	import RightSidebar from '$lib/components/RightSidebar.svelte';
 	import MobileLeftSidebar from '$lib/components/MobileLeftSidebar.svelte';
 	import MobileRightSidebar from '$lib/components/MobileRightSidebar.svelte';
+	
+	// Importar debug service para desarrollo
+	import { DebugService } from '$lib/debug';
+	import { browser } from '$app/environment';
+	
+	// Hacer disponible el debug service en la consola del navegador
+	if (browser) {
+		(window as any).debugWellPlay = DebugService;
+		console.log('🛠️ Debug service disponible: debugWellPlay.debugUserFlow() o debugWellPlay.debugPersistenceFlow()');
+	}
 </script>
 
 <svelte:head>

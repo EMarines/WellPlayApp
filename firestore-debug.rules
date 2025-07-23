@@ -1,0 +1,19 @@
+// Reglas básicas de Firestore para solucionar problemas de permisos
+// USAR ESTAS REGLAS TEMPORALMENTE PARA DEBUGGING
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // REGLAS TEMPORALES PARA DEBUGGING - MUY PERMISIVAS
+    match /users/{userId} {
+      // Permitir acceso completo si está autenticado y es su documento
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Permitir acceso general para testing (SOLO PARA DESARROLLO)
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

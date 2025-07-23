@@ -12,13 +12,13 @@
 	];
 
 	let currentSponsorIndex = 0;
-	let intervalId: number;
+	let intervalId: number | undefined;
 
 	onMount(() => {
 		// Rotar sponsors cada 3 segundos
 		intervalId = setInterval(() => {
 			currentSponsorIndex = (currentSponsorIndex + 1) % sponsors.length;
-		}, 3000);
+		}, 3000) as any;
 
 		return () => {
 			if (intervalId) {

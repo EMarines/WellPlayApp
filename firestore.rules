@@ -1,0 +1,56 @@
+// Reglas de seguridad de Firestore para WellPlay
+// Copia estas reglas en la consola de Firebase -> Firestore Database -> Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Reglas para la colección de usuarios
+    match /users/{userId} {
+      // Permitir lectura y escritura solo al propio usuario autenticado
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Permitir crear perfil si está autenticado y es su propio documento
+      allow create: if request.auth != null && request.auth.uid == userId;
+      
+      // Permitir actualizar solo ciertos campos
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && validateUserUpdate(request.resource.data);
+    }
+    
+    // Reglas para perfiles públicos (solo lectura)
+    match /users/{userId} {
+      // Permitir lectura pública solo de ciertos campos si el perfil es público
+      allow read: if request.auth != null 
+                  && resource.data.preferences.privacy == 'public'
+                  && onlyPublicFields(resource.data);
+    }
+    
+    // Función para validar actualizaciones de usuario
+    function validateUserUpdate(data) {
+      // Verificar que no se modifiquen campos críticos
+      return !data.diff(resource.data).affectedKeys().hasAny(['uid', 'createdAt']) &&
+             // Verificar que el email no cambie (solo Firebase Auth puede hacerlo)
+             data.email == resource.data.email;
+    }
+    
+    // Función para verificar campos públicos
+    function onlyPublicFields(data) {
+      // Solo ciertos campos son visibles en perfiles públicos
+      return data.keys().hasAny(['displayName', 'bio', 'photoURL', 'fitnessLevel', 'stats']);
+    }
+    
+    // Reglas para otras colecciones futuras
+    match /challenges/{challengeId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+                   (request.auth.uid == resource.data.createdBy || 
+                    request.auth.uid in resource.data.participants);
+    }
+    
+    match /workouts/{workoutId} {
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+  }
+}
