@@ -7,10 +7,28 @@
 	import { signOut } from 'firebase/auth';
 	import { auth } from '$lib/firebase';
 	
-	let name = 'WellPlay';
-	let isMobileMenuOpen = false;
-	let userAlias = '';
-	let userPhotoURL = '';
+let name = 'WellPlay';
+let isMobileMenuOpen = false;
+let userAlias = '';
+let userPhotoURL = '';
+let isDropdownOpen = false;
+
+function toggleDropdown() {
+	isDropdownOpen = !isDropdownOpen;
+}
+
+function closeDropdown() {
+	isDropdownOpen = false;
+}
+
+// Helper for dropdown blur event
+function handleDropdownBlur(e: FocusEvent) {
+	const related = e.relatedTarget as Element | null;
+	// Only close if focus moves outside the dropdown menu
+	if (!related || !related.closest('.dropdown-menu')) {
+		closeDropdown();
+	}
+}
 
 	// Función para obtener el nombre a mostrar
 	function getDisplayName(user: any, alias: string): string {
@@ -82,22 +100,23 @@
 	}
 
 	async function handleLogout() {
-		try {
-			await signOut(auth);
-			closeMobileMenu();
-		} catch (error) {
-			console.error('Error al cerrar sesión:', error);
-		}
+	try {
+		await signOut(auth);
+		closeMobileMenu();
+		window.location.href = '/';
+	} catch (error) {
+		console.error('Error al cerrar sesión:', error);
+	}
 	}
 
 	// Cerrar menú al hacer clic fuera
 	onMount(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			const target = event.target as Element;
-			if (isMobileMenuOpen && !target.closest('.mobile-menu') && !target.closest('.mobile-menu-btn')) {
-				closeMobileMenu();
-			}
-		};
+const handleClickOutside = (event: MouseEvent) => {
+	const target = event.target as Element | null;
+	if (isMobileMenuOpen && target && typeof target.closest === 'function' && !target.closest('.mobile-menu') && !target.closest('.mobile-menu-btn')) {
+		closeMobileMenu();
+	}
+};
 
 		document.addEventListener('click', handleClickOutside);
 		
@@ -143,41 +162,59 @@
 				<li class="nav-item">
 					<a href="/chat" class="nav-link" class:active={browser && $page?.url?.pathname === '/chat'}>Chat</a>
 				</li>
-				<li class="nav-item">
-					<a href="/about" class="nav-link" class:active={browser && $page?.url?.pathname === '/about'}>About</a>
-				</li>
-				{#if $isAuthenticated}
-					<li class="nav-item profile">
-						<a href="/profile-setup" class="profile-link">
-							<div class="profile-avatar">
-								{#if userPhotoURL}
-									<img src={userPhotoURL} alt="Perfil" class="avatar-img" />
-								{:else}
-									<img src="/profile-placeholder.svg" alt="Perfil" class="avatar-img" />
-								{/if}
-							</div>
-							<span class="user-name">{getDisplayName($user, userAlias)}</span>
+		<li class="nav-item">
+			<a href="/about" class="nav-link" class:active={browser && $page?.url?.pathname === '/about'}>About</a>
+		</li>
+		{#if $isAuthenticated}
+			<li class="nav-item profile-dropdown">
+				<button
+					class="profile-btn"
+					tabindex="0"
+					aria-haspopup="true"
+					aria-expanded={isDropdownOpen}
+					on:click={toggleDropdown}
+					on:keydown={(e) => e.key === 'Enter' && toggleDropdown()}
+					on:mousedown={(e) => e.preventDefault()}
+					on:blur={handleDropdownBlur}
+				>
+					<div class="profile-avatar">
+						{#if userPhotoURL}
+							<img src={userPhotoURL} alt="Perfil" class="avatar-img" />
+						{:else}
+							<img src="/profile-placeholder.svg" alt="Perfil" class="avatar-img" />
+						{/if}
+					</div>
+					<span class="user-name">{getDisplayName($user, userAlias)}</span>
+					<svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+				</button>
+				{#if isDropdownOpen}
+					<div class="dropdown-menu">
+						<a href="/profile-setup" class="dropdown-item" on:mousedown={(e) => e.stopPropagation()} on:click={(e) => { e.preventDefault(); closeDropdown(); window.location.href = '/profile-setup'; }}>
+							Editar perfil
 						</a>
-					</li>
-					<li class="nav-item">
-						<button class="logout-btn" on:click={handleLogout}>
-							Cerrar Sesión
+						<a href="/configuracion" class="dropdown-item" on:mousedown={(e) => e.stopPropagation()} on:click={(e) => { e.preventDefault(); closeDropdown(); window.location.href = '/configuracion'; }}>
+							Configuración
+						</a>
+						<button class="dropdown-item logout" on:mousedown={(e) => e.stopPropagation()} on:click={() => { handleLogout(); closeDropdown(); }}>
+							Cerrar sesión
 						</button>
-					</li>
-				{:else}
-					<li class="nav-item">
-						<a href="/auth" class="nav-link auth-link">
-							<div class="auth-icon">
-								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-									<path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
-								</svg>
-							</div>
-							Iniciar Sesión
-						</a>
-					</li>
+					</div>
 				{/if}
-			</ul>
-		</div>
+			</li>
+		{:else}
+			<li class="nav-item">
+				<a href="/auth" class="nav-link auth-link">
+					<div class="auth-icon">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+							<path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"/>
+						</svg>
+					</div>
+					Iniciar Sesión
+				</a>
+			</li>
+		{/if}
+	</ul>
+</div>
 
 		<!-- Botón de menú móvil -->
 		<button 
@@ -302,7 +339,7 @@
 			</ul>
 		</div>
 	</div>
-</nav>
+	</nav>
 
 <style>
 	.navbar {
@@ -337,16 +374,88 @@
 		height: 100%;
 	}
 
-	.logo-link {
-		text-decoration: none;
-		display: flex;
-		align-items: center;
-		transition: all 0.3s ease;
-		margin: 0;
-		padding: 0;
-		height: 100%;
-		line-height: 0;
+	/* .logo-link styles are defined below, remove empty ruleset */
+   .profile-dropdown {
+	   position: relative;
+	   cursor: pointer;
+	   display: flex;
+	   align-items: center;
+	   outline: none;
+   }
+   .profile-btn {
+	   display: flex;
+	   flex-direction: column;
+	   align-items: center;
+	   gap: 0.25rem;
+	   background: none;
+	   border: none;
+	   padding: 0.5rem 0.75rem;
+	   cursor: pointer;
+	   border-radius: 8px;
+	   transition: background 0.2s;
+	   position: relative;
+   }
+   .profile-btn:focus, .profile-btn:hover {
+	   background: rgba(102, 126, 234, 0.08);
+   }
+   .profile-avatar {
+	   margin-bottom: 0.25rem;
+	   background: transparent !important;
+	   box-shadow: none !important;
+   }
+   .avatar-img {
+	   background: transparent !important;
+   }
+   .user-name {
+	   font-size: 0.8rem;
+	   color: #666;
+	   font-weight: 500;
+	   text-align: center;
+	   white-space: nowrap;
+	   max-width: 80px;
+	   overflow: hidden;
+	   text-overflow: ellipsis;
+   }
+	.profile-dropdown:focus .dropdown-menu,
+	.profile-dropdown:active .dropdown-menu {
+		display: block;
 	}
+	.dropdown-arrow {
+		margin-left: 0.25rem;
+		transition: transform 0.2s;
+	}
+	.dropdown-menu {
+		position: absolute;
+		top: 110%;
+		right: 0;
+		background: #fff;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+		border-radius: 8px;
+		min-width: 180px;
+		z-index: 1001;
+		display: block;
+		padding: 0.5rem 0;
+	}
+	.dropdown-item {
+		display: block;
+		width: 100%;
+		padding: 0.75rem 1.5rem;
+		color: #333;
+		text-align: left;
+		background: none;
+		border: none;
+		outline: none;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: background 0.15s;
+		text-decoration: none;
+	}
+	.dropdown-item:hover {
+		background: #f5f5f5;
+	}
+   .dropdown-item.logout {
+	   color: #d32f2f;
+   }
 
 	.logo-img {
 		height: 50px; /* Reducido significativamente por el logo más grande */
@@ -408,9 +517,9 @@
 		border-bottom: 2px solid #667eea;
 	}
 
-	.profile {
+	/* .profile {
 		margin-left: 1rem;
-	}
+	} */
 
 	.profile-avatar {
 		width: 40px;
@@ -434,7 +543,7 @@
 		background: linear-gradient(135deg, #667eea, #764ba2);
 	}
 
-	.profile-link {
+	/* .profile-link {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -445,11 +554,11 @@
 		border-radius: 8px;
 		transition: background-color 0.3s ease;
 		min-width: 70px;
-	}
+	} */
 
-	.profile-link:hover {
+	/* .profile-link:hover {
 		background-color: rgba(102, 126, 234, 0.1);
-	}
+	} */
 
 	.user-name {
 		font-size: 0.8rem;
@@ -462,7 +571,7 @@
 		text-overflow: ellipsis;
 	}
 
-	.logout-btn {
+	/* .logout-btn {
 		background: linear-gradient(135deg, #ef4444, #dc2626);
 		color: white;
 		border: none;
@@ -477,7 +586,7 @@
 	.logout-btn:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-	}
+	} */
 
 	.auth-link {
 		background: linear-gradient(135deg, #667eea, #764ba2);

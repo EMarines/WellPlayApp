@@ -1,36 +1,38 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
+import { onMount } from 'svelte';
+import { goto } from '$app/navigation';
+	// Update the import path below to the correct location of your auth store/module.
+	// For example, if your auth store is at $lib/stores/auth.ts, use:
 	import { user, isAuthenticated } from '$lib/auth';
 	import { UserProfileService } from '$lib/services/userProfile';
 	import type { UserProfile } from '$lib/types';
 
-	let profile: UserProfile | null = null;
-	let loading = false;
+	let loading = true;
 	let saving = false;
 	let error = '';
 	let success = '';
 
-	// Campos del formulario
+	let profile: UserProfile | null = null;
+
+	// Form bindings
 	let bio = '';
 	let age = '';
 	let weight = '';
 	let height = '';
 	let fitnessLevel: 'beginner' | 'intermediate' | 'advanced' = 'beginner';
 	let goals: string[] = [];
-	let newGoal = '';
+	let customGoal = '';
 	let units: 'metric' | 'imperial' = 'metric';
 	let notifications = true;
 	let privacy: 'public' | 'friends' | 'private' = 'public';
-	
-	// Variables para la foto de perfil
+
+	// Photo upload state
 	let photoFile: File | null = null;
 	let photoURL = '';
 	let photoUploading = false;
 	let photoError = '';
 	let fileInput: HTMLInputElement;
 
-	// Opciones predefinidas
 	const fitnessLevels = [
 		{ value: 'beginner', label: 'Principiante' },
 		{ value: 'intermediate', label: 'Intermedio' },
@@ -49,84 +51,83 @@
 	];
 
 	onMount(async () => {
-		if (!$isAuthenticated || !$user) {
+		if (!$user || !$isAuthenticated) {
 			goto('/auth');
 			return;
 		}
-
 		await loadProfile();
 	});
 
 	async function loadProfile() {
-		if (!$user?.uid) return;
-
-		loading = true;
-		try {
-			profile = await UserProfileService.ensureUserProfile($user.uid, $user.email || '', $user.displayName || undefined);
-			if (profile) {
-				// Llenar los campos con los datos existentes
-				bio = profile.bio || '';
-				age = profile.age?.toString() || '';
-				weight = profile.weight?.toString() || '';
-				height = profile.height?.toString() || '';
-				fitnessLevel = profile.fitnessLevel;
-				goals = [...profile.goals];
-				units = profile.preferences.units;
-				notifications = profile.preferences.notifications;
-				privacy = profile.preferences.privacy;
-				photoURL = profile.photoURL || '';
+		if ($user?.uid) {
+			loading = true;
+			try {
+				profile = await UserProfileService.ensureUserProfile(
+					$user.uid,
+					$user.email || '',
+					$user.displayName || ''
+				);
+				if (profile) {
+					bio = profile.bio || '';
+					age = profile.age?.toString() || '';
+					weight = profile.weight?.toString() || '';
+					height = profile.height?.toString() || '';
+					fitnessLevel = profile.fitnessLevel;
+					goals = [...profile.goals];
+					units = profile.preferences.units;
+					notifications = profile.preferences.notifications;
+					privacy = profile.preferences.privacy;
+					photoURL = profile.photoURL || '';
+				}
+			} catch (err) {
+				console.error('Error al cargar perfil:', err);
+				error = 'Error al cargar el perfil';
+			} finally {
+				loading = false;
 			}
-		} catch (err) {
-			console.error('Error al cargar perfil:', err);
-			error = 'Error al cargar el perfil';
-		} finally {
-			loading = false;
 		}
 	}
 
-	function addGoal() {
-		if (newGoal.trim() && !goals.includes(newGoal.trim())) {
-			goals = [...goals, newGoal.trim()];
-			newGoal = '';
+	function addCustomGoal() {
+		if (customGoal.trim() && !goals.includes(customGoal.trim())) {
+			goals = [...goals, customGoal.trim()];
+			customGoal = '';
 		}
 	}
 
 	function removeGoal(goalToRemove: string) {
-		goals = goals.filter(goal => goal !== goalToRemove);
+		goals = goals.filter((g) => g !== goalToRemove);
 	}
 
-	function addCommonGoal(goal: string) {
-		if (!goals.includes(goal)) {
+	function toggleGoal(goal: string) {
+		if (goals.includes(goal)) {
+			removeGoal(goal);
+		} else {
 			goals = [...goals, goal];
 		}
 	}
 
-	// Funciones para manejar la foto de perfil
-	function handlePhotoSelect() {
+	function triggerFileInput() {
 		fileInput.click();
 	}
 
-	function handlePhotoChange(event: Event) {
-		const input = event.target as HTMLInputElement;
-		const file = input.files?.[0];
-		
+	function handleFileChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
 		if (file) {
-			// Validar tipo de archivo
 			if (!file.type.startsWith('image/')) {
 				photoError = 'Por favor selecciona una imagen válida';
 				return;
 			}
-			
-			// Validar tamaño (máximo 5MB)
-			if (file.size > 5 * 1024 * 1024) {
-				photoError = 'La imagen debe ser menor a 5MB';
+			if (file.size > 1 * 1024 * 1024) {
+				// 1MB limit for free tier
+				photoError = 'La imagen debe ser menor a 1MB';
 				return;
 			}
-			
 			photoFile = file;
 			photoError = '';
-			
-			// Crear preview de la imagen
+
+			// Show preview
 			const reader = new FileReader();
 			reader.onload = (e) => {
 				photoURL = e.target?.result as string;
@@ -135,17 +136,14 @@
 		}
 	}
 
-	async function uploadPhoto() {
+	async function uploadPhoto(): Promise<string> {
 		if (!photoFile || !$user?.uid) return '';
-
 		photoUploading = true;
 		photoError = '';
-		
 		try {
-			// Usar versión gratuita Base64 (máximo 1MB)
 			const uploadedURL = await UserProfileService.uploadProfilePhotoBase64($user.uid, photoFile);
 			photoURL = uploadedURL;
-			photoFile = null;
+			photoFile = null; // Clear after upload
 			return uploadedURL;
 		} catch (err) {
 			console.error('Error al subir foto:', err);
@@ -158,7 +156,6 @@
 
 	async function removePhoto() {
 		if (!$user?.uid || !photoURL) return;
-
 		try {
 			await UserProfileService.deleteProfilePhoto($user.uid, photoURL);
 			photoURL = '';
@@ -177,12 +174,11 @@
 		success = '';
 
 		try {
-			// Subir foto si hay una nueva
 			let finalPhotoURL = photoURL;
 			if (photoFile) {
 				finalPhotoURL = await uploadPhoto();
 			}
-			
+
 			const updatedProfile: Partial<UserProfile> = {
 				bio,
 				age: age ? parseInt(age) : undefined,
@@ -197,15 +193,12 @@
 				}
 			};
 
-			// Incluir photoURL solo si hay una
 			if (finalPhotoURL) {
 				updatedProfile.photoURL = finalPhotoURL;
 			}
 
 			await UserProfileService.updateUserProfile($user.uid, updatedProfile);
 			success = 'Perfil actualizado correctamente';
-			
-			// Redirigir al perfil después de un momento
 			setTimeout(() => {
 				goto('/profile');
 			}, 1500);
@@ -221,6 +214,8 @@
 		goto('/profile');
 	}
 </script>
+
+<!-- El resto del archivo (HTML y CSS) está correcto y no necesita cambios. -->
 
 <svelte:head>
 	<title>Completar Perfil - WellPlay</title>
@@ -243,14 +238,11 @@
 				<div class="section">
 					<h2>Foto de Perfil</h2>
 					<p class="size-limit-notice">📏 Tamaño máximo: 1MB (versión gratuita)</p>
-					
 					<div class="photo-upload-container">
 						<div class="photo-preview">
 							{#if photoURL}
 								<img src={photoURL} alt="Vista previa de perfil" class="profile-image" />
-								<button type="button" class="remove-photo-btn" on:click={removePhoto} title="Eliminar foto">
-									<span>✕</span>
-								</button>
+								<button type="button" class="remove-photo-btn" title="Eliminar foto" on:click={removePhoto}><span>✕</span></button>
 							{:else}
 								<div class="photo-placeholder">
 									<span class="placeholder-icon">📷</span>
@@ -258,9 +250,8 @@
 								</div>
 							{/if}
 						</div>
-						
 						<div class="photo-controls">
-							<button type="button" class="photo-btn" on:click={handlePhotoSelect} disabled={photoUploading}>
+							<button type="button" class="photo-btn" on:click={triggerFileInput} disabled={photoUploading}>
 								{#if photoUploading}
 									<span class="spinner"></span>
 									Subiendo...
@@ -268,74 +259,33 @@
 									📷 {photoURL ? 'Cambiar foto' : 'Agregar foto'}
 								{/if}
 							</button>
-							
 							{#if photoError}
 								<p class="error-text">{photoError}</p>
 							{/if}
 						</div>
-						
-						<!-- Input oculto para seleccionar archivo -->
-						<input 
-							type="file" 
-							bind:this={fileInput}
-							on:change={handlePhotoChange}
-							accept="image/*"
-							style="display: none;"
-						/>
+						<input type="file" accept="image/*" on:change={handleFileChange} bind:this={fileInput} style="display: none;" class="svelte-ulck9g">
 					</div>
 				</div>
 
 				<!-- Información personal -->
 				<div class="section">
 					<h2>Información Personal</h2>
-					
 					<div class="form-group">
 						<label for="bio">Biografía (opcional)</label>
-						<textarea 
-							id="bio"
-							bind:value={bio}
-							placeholder="Cuéntanos un poco sobre ti..."
-							rows="3"
-						></textarea>
+						<textarea id="bio" bind:value={bio} placeholder="Cuéntanos un poco sobre ti..." rows="3"></textarea>
 					</div>
-
 					<div class="form-row">
 						<div class="form-group">
 							<label for="age">Edad (opcional)</label>
-							<input 
-								id="age"
-								type="number" 
-								bind:value={age}
-								placeholder="Ej: 25"
-								min="13"
-								max="100"
-							/>
+							<input id="age" type="number" bind:value={age} placeholder="Ej: 25" min="13" max="100" />
 						</div>
-
 						<div class="form-group">
 							<label for="weight">Peso (opcional)</label>
-							<input 
-								id="weight"
-								type="number" 
-								bind:value={weight}
-								placeholder={units === 'metric' ? 'kg' : 'lbs'}
-								step="0.1"
-								min="20"
-								max="300"
-							/>
+							<input id="weight" type="number" bind:value={weight} placeholder={units === 'metric' ? 'kg' : 'lbs'} step="0.1" min="20" max="300" />
 						</div>
-
 						<div class="form-group">
 							<label for="height">Altura (opcional)</label>
-							<input 
-								id="height"
-								type="number" 
-								bind:value={height}
-								placeholder={units === 'metric' ? 'cm' : 'in'}
-								step="0.1"
-								min="100"
-								max="250"
-							/>
+							<input id="height" type="number" bind:value={height} placeholder={units === 'metric' ? 'cm' : 'in'} step="0.1" min="100" max="250" />
 						</div>
 					</div>
 				</div>
@@ -346,11 +296,7 @@
 					<div class="radio-group">
 						{#each fitnessLevels as level}
 							<label class="radio-option">
-								<input 
-									type="radio" 
-									bind:group={fitnessLevel} 
-									value={level.value}
-								/>
+								<input type="radio" bind:group={fitnessLevel} value={level.value} />
 								<span class="radio-label">{level.label}</span>
 							</label>
 						{/each}
@@ -360,37 +306,23 @@
 				<!-- Objetivos -->
 				<div class="section">
 					<h2>Objetivos de Fitness</h2>
-					
 					<div class="goals-common">
 						<p>Selecciona tus objetivos:</p>
 						<div class="goals-grid">
 							{#each commonGoals as goal}
-								<button 
-									type="button"
-									class="goal-chip"
-									class:selected={goals.includes(goal)}
-									on:click={() => addCommonGoal(goal)}
-								>
+								<button type="button" class="goal-chip" class:selected={goals.includes(goal)} on:click={() => toggleGoal(goal)}>
 									{goal}
 								</button>
 							{/each}
 						</div>
 					</div>
-
 					<div class="form-group">
 						<label for="newGoal">Agregar objetivo personalizado</label>
 						<div class="input-with-button">
-							<input 
-								id="newGoal"
-								type="text" 
-								bind:value={newGoal}
-								placeholder="Ej: Correr 5km sin parar"
-								on:keydown={(e) => e.key === 'Enter' && addGoal()}
-							/>
-							<button type="button" on:click={addGoal}>Agregar</button>
+							<input id="newGoal" type="text" bind:value={customGoal} on:keydown={(e) => e.key === 'Enter' && addCustomGoal()} placeholder="Ej: Correr 5km sin parar" />
+							<button type="button" on:click={addCustomGoal}>Agregar</button>
 						</div>
 					</div>
-
 					{#if goals.length > 0}
 						<div class="selected-goals">
 							<p>Tus objetivos:</p>
@@ -409,7 +341,6 @@
 				<!-- Preferencias -->
 				<div class="section">
 					<h2>Preferencias</h2>
-					
 					<div class="form-group">
 						<label for="units">Sistema de medidas</label>
 						<select id="units" bind:value={units}>
@@ -417,17 +348,12 @@
 							<option value="imperial">Imperial (lbs, in)</option>
 						</select>
 					</div>
-
 					<div class="form-group">
 						<label class="checkbox-label">
-							<input 
-								type="checkbox" 
-								bind:checked={notifications}
-							/>
+							<input type="checkbox" bind:checked={notifications} />
 							<span>Recibir notificaciones</span>
 						</label>
 					</div>
-
 					<div class="form-group">
 						<label for="privacy">Privacidad del perfil</label>
 						<select id="privacy" bind:value={privacy}>
@@ -439,34 +365,15 @@
 				</div>
 
 				{#if error}
-					<div class="error-message">
-						{error}
-					</div>
+					<div class="error-message">{error}</div>
 				{/if}
-
 				{#if success}
-					<div class="success-message">
-						{success}
-					</div>
+					<div class="success-message">{success}</div>
 				{/if}
 
 				<div class="form-actions">
-					<button 
-						type="button" 
-						class="skip-btn"
-						on:click={skipSetup}
-						disabled={saving}
-					>
-						Saltar por ahora
-					</button>
-					
-					<button 
-						type="submit" 
-						class="save-btn"
-						disabled={saving}
-					>
-						{saving ? 'Guardando...' : 'Guardar Perfil'}
-					</button>
+					<button type="button" class="skip-btn" on:click={skipSetup} disabled={saving}>Saltar por ahora</button>
+					<button type="submit" class="save-btn" disabled={saving}>{saving ? 'Guardando...' : 'Guardar Perfil'}</button>
 				</div>
 			</form>
 		{/if}
@@ -475,12 +382,11 @@
 
 <style>
 	.profile-setup-container {
-		min-height: 100vh;
-		padding: 2rem;
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 		display: flex;
-		justify-content: center;
-		align-items: flex-start;
+		flex-direction: column;
+		align-items: center;
+		padding: 1rem;
+		min-height: 100vh;
 	}
 
 	.setup-card {
@@ -719,6 +625,10 @@
 		color: #333;
 	}
 
+	.goals-common p {
+		margin-bottom: 0.75rem;
+	}
+
 	.goals-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -732,6 +642,7 @@
 		border-radius: 20px;
 		background: white;
 		cursor: pointer;
+		text-align: center;
 		font-size: 0.9rem;
 		transition: all 0.3s ease;
 	}
@@ -771,6 +682,12 @@
 		flex-wrap: wrap;
 		gap: 0.5rem;
 	}
+	
+	.selected-goals {
+		margin-top: 1rem;
+	}
+
+	.selected-goals p { margin-bottom: 0.5rem; }
 
 	.goal-tag {
 		display: inline-flex;
@@ -804,15 +721,15 @@
 	}
 
 	.checkbox-label {
-		display: flex !important;
+		display: flex;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 0.75rem;
 		cursor: pointer;
 	}
 
 	.checkbox-label input {
 		width: auto;
-		margin: 0;
+		height: 1.2em;
 	}
 
 	.form-actions {
