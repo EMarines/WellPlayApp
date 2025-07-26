@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { user, isAuthenticated, loading } from '$lib/auth';
 	import { UserProfileService } from '$lib/services/userProfile';
 	import { signOut } from 'firebase/auth';
 	import { auth } from '$lib/firebase';
-	
+
 let name = 'WellPlay';
 let isMobileMenuOpen = false;
 let userAlias = '';
@@ -102,8 +103,9 @@ function handleDropdownBlur(e: FocusEvent) {
 	async function handleLogout() {
 	try {
 		await signOut(auth);
-		closeMobileMenu();
-		window.location.href = '/';
+		closeMobileMenu(); // Cierra el menú móvil si está abierto
+		closeDropdown(); // Cierra el menú desplegable si está abierto
+		goto('/'); // Navega a la página de inicio sin recargar
 	} catch (error) {
 		console.error('Error al cerrar sesión:', error);
 	}
@@ -189,13 +191,13 @@ const handleClickOutside = (event: MouseEvent) => {
 				</button>
 				{#if isDropdownOpen}
 					<div class="dropdown-menu">
-						<a href="/profile-setup" class="dropdown-item" on:mousedown={(e) => e.stopPropagation()} on:click={(e) => { e.preventDefault(); closeDropdown(); window.location.href = '/profile-setup'; }}>
+						<a href="/profile-setup" class="dropdown-item" on:click={() => { closeDropdown(); goto('/profile-setup'); }}>
 							Editar perfil
 						</a>
-						<a href="/configuracion" class="dropdown-item" on:mousedown={(e) => e.stopPropagation()} on:click={(e) => { e.preventDefault(); closeDropdown(); window.location.href = '/configuracion'; }}>
+						<a href="/configuracion" class="dropdown-item" on:click={() => { closeDropdown(); goto('/configuracion'); }}>
 							Configuración
 						</a>
-						<button class="dropdown-item logout" on:mousedown={(e) => e.stopPropagation()} on:click={() => { handleLogout(); closeDropdown(); }}>
+						<button class="dropdown-item logout" on:click={handleLogout}>
 							Cerrar sesión
 						</button>
 					</div>
@@ -249,7 +251,7 @@ const handleClickOutside = (event: MouseEvent) => {
 						href="/" 
 						class="mobile-nav-link" 
 						class:active={browser && $page?.url?.pathname === '/'}
-						on:click={closeMobileMenu}
+						on:click={() => { closeMobileMenu(); goto('/'); }}
 					>
 						🏠 Home
 					</a>
@@ -259,7 +261,7 @@ const handleClickOutside = (event: MouseEvent) => {
 						href="/retos" 
 						class="mobile-nav-link" 
 						class:active={browser && $page?.url?.pathname === '/retos'}
-						on:click={closeMobileMenu}
+						on:click={() => { closeMobileMenu(); goto('/retos'); }}
 					>
 						🏆 Retos
 					</a>
@@ -269,7 +271,7 @@ const handleClickOutside = (event: MouseEvent) => {
 						href="/blog" 
 						class="mobile-nav-link" 
 						class:active={browser && $page?.url?.pathname === '/blog'}
-						on:click={closeMobileMenu}
+						on:click={() => { closeMobileMenu(); goto('/blog'); }}
 					>
 						📝 Blog
 					</a>
@@ -279,7 +281,7 @@ const handleClickOutside = (event: MouseEvent) => {
 						href="/store" 
 						class="mobile-nav-link" 
 						class:active={browser && $page?.url?.pathname === '/store'}
-						on:click={closeMobileMenu}
+						on:click={() => { closeMobileMenu(); goto('/store'); }}
 					>
 						🛍️ Store
 					</a>
@@ -289,7 +291,7 @@ const handleClickOutside = (event: MouseEvent) => {
 						href="/chat" 
 						class="mobile-nav-link" 
 						class:active={browser && $page?.url?.pathname === '/chat'}
-						on:click={closeMobileMenu}
+						on:click={() => { closeMobileMenu(); goto('/chat'); }}
 					>
 						💬 Chat
 					</a>
@@ -299,7 +301,7 @@ const handleClickOutside = (event: MouseEvent) => {
 						href="/about" 
 						class="mobile-nav-link" 
 						class:active={browser && $page?.url?.pathname === '/about'}
-						on:click={closeMobileMenu}
+						on:click={() => { closeMobileMenu(); goto('/about'); }}
 					>
 						ℹ️ About
 					</a>
@@ -309,9 +311,13 @@ const handleClickOutside = (event: MouseEvent) => {
 						<a 
 							href="/profile-setup" 
 							class="mobile-profile"
-							on:click={closeMobileMenu}
+							on:click={() => { closeMobileMenu(); goto('/profile-setup'); }}
 						>
-							<img src="/profile-placeholder.svg" alt="Perfil" class="mobile-avatar" />
+							{#if userPhotoURL}
+								<img src={userPhotoURL} alt="Perfil" class="mobile-avatar" />
+							{:else}
+								<img src="/profile-placeholder.svg" alt="Perfil" class="mobile-avatar" />
+							{/if}
 							<span>{getDisplayName($user, userAlias)}</span>
 						</a>
 					</li>
@@ -325,7 +331,7 @@ const handleClickOutside = (event: MouseEvent) => {
 						<a 
 							href="/auth" 
 							class="mobile-nav-link auth-mobile"
-							on:click={closeMobileMenu}
+							on:click={() => { closeMobileMenu(); goto('/auth'); }}
 						>
 							<div class="mobile-auth-icon">
 								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
@@ -342,6 +348,7 @@ const handleClickOutside = (event: MouseEvent) => {
 	</nav>
 
 <style>
+	/* Estilos generales del Navbar */
 	.navbar {
 		position: fixed;
 		top: 0;
@@ -374,7 +381,6 @@ const handleClickOutside = (event: MouseEvent) => {
 		height: 100%;
 	}
 
-	/* .logo-link styles are defined below, remove empty ruleset */
    .profile-dropdown {
 	   position: relative;
 	   cursor: pointer;
@@ -398,14 +404,6 @@ const handleClickOutside = (event: MouseEvent) => {
    .profile-btn:focus, .profile-btn:hover {
 	   background: rgba(102, 126, 234, 0.08);
    }
-   .profile-avatar {
-	   margin-bottom: 0.25rem;
-	   background: transparent !important;
-	   box-shadow: none !important;
-   }
-   .avatar-img {
-	   background: transparent !important;
-   }
    .user-name {
 	   font-size: 0.8rem;
 	   color: #666;
@@ -416,10 +414,6 @@ const handleClickOutside = (event: MouseEvent) => {
 	   overflow: hidden;
 	   text-overflow: ellipsis;
    }
-	.profile-dropdown:focus .dropdown-menu,
-	.profile-dropdown:active .dropdown-menu {
-		display: block;
-	}
 	.dropdown-arrow {
 		margin-left: 0.25rem;
 		transition: transform 0.2s;
@@ -457,7 +451,7 @@ const handleClickOutside = (event: MouseEvent) => {
 	   color: #d32f2f;
    }
 
-	.logo-img {
+	.logo-link .logo-img {
 		height: 50px; /* Reducido significativamente por el logo más grande */
 		width: auto;
 		transition: transform 0.3s ease;
@@ -517,10 +511,6 @@ const handleClickOutside = (event: MouseEvent) => {
 		border-bottom: 2px solid #667eea;
 	}
 
-	/* .profile {
-		margin-left: 1rem;
-	} */
-
 	.profile-avatar {
 		width: 40px;
 		height: 40px;
@@ -542,52 +532,6 @@ const handleClickOutside = (event: MouseEvent) => {
 		object-fit: cover;
 		background: linear-gradient(135deg, #667eea, #764ba2);
 	}
-
-	/* .profile-link {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.25rem;
-		text-decoration: none;
-		color: inherit;
-		padding: 0.5rem;
-		border-radius: 8px;
-		transition: background-color 0.3s ease;
-		min-width: 70px;
-	} */
-
-	/* .profile-link:hover {
-		background-color: rgba(102, 126, 234, 0.1);
-	} */
-
-	.user-name {
-		font-size: 0.8rem;
-		color: #666;
-		font-weight: 500;
-		text-align: center;
-		white-space: nowrap;
-		max-width: 80px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	/* .logout-btn {
-		background: linear-gradient(135deg, #ef4444, #dc2626);
-		color: white;
-		border: none;
-		padding: 0.5rem 1rem;
-		border-radius: 8px;
-		font-size: 0.9rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.3s ease;
-	}
-
-	.logout-btn:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-	} */
-
 	.auth-link {
 		background: linear-gradient(135deg, #667eea, #764ba2);
 		color: white !important;
